@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Study Notes Assistant</title>
+  <style>
+    /* General styles */
+    body {
+      font-family: 'Courier New', monospace;
+      margin: 0;
+      padding: 0;
+      background-color: transparent; /* Transparent to show outer border */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 400px;
+      width: 360px;
+    }
+
+    .container {
+      background-color: #000; /* Black background */
+      border: 3px solid #00ff00; /* Hacker green border */
+      border-radius: 15px; /* Slightly rounded corners */
+      padding: 20px;
+      width: 340px; /* Fixed width */
+      box-shadow: 0px 4px 10px rgba(0, 255, 0, 0.5); /* Glow effect */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      margin: 0;
+      padding: 10px 15px;
+      text-align: center;
+      color: #000; /* Black text */
+      background-color: #00ff00; /* Hacker green background */
+      border-radius: 10px; /* Rounded header */
+      font-size: 20px;
+      width: 100%;
+    }
+
+    #chatbox {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 10px;
+      border: 1px solid #00ff00; /* Green border */
+      border-radius: 5px; /* Slightly rounded corners */
+      background-color: #fff; /* White background */
+      max-height: 100px; /* Limited height for alignment */
+      overflow-y: auto;
+      width: 100%;
+      margin: 15px 0;
+      color: #000; /* Black text */
+    }
+
+    .message {
+      margin: 5px 0;
+      padding: 10px;
+      font-size: 14px;
+      line-height: 1.5;
+      word-wrap: break-word;
+    }
+
+    .bot {
+      background-color: #e7ffe7; /* Light greenish background */
+      color: #000; /* Black text */
+    }
+
+    .user {
+      background-color: #ccffcc; /* Light green */
+      color: #000; /* Black text */
+      align-self: flex-end;
+    }
+
+    #user-input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #00ff00; /* Green border */
+      border-radius: 5px; /* Slightly rounded input field */
+      font-size: 14px;
+      background-color: #fff; /* White background */
+      color: #000; /* Black text */
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #00ff00; /* Hacker green button */
+      color: #000; /* Black text */
+      border: none;
+      border-radius: 5px; /* Slightly rounded button */
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      transition: background-color 0.3s, transform 0.2s;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #00cc00; /* Slightly darker green on hover */
+      transform: scale(1.02); /* Slight zoom effect */
+    }
+
+    button:active {
+      background-color: #009900; /* Darker green when pressed */
+      transform: scale(0.98); /* Slight shrink effect */
+      box-shadow: inset 0px 3px 5px rgba(0, 0, 0, 0.2); /* Inner shadow for pressed effect */
+    }
+
+    footer {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #00ff00; /* Hacker green text */
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Study Notes Assistant</h1>
+    <div id="chatbox">
+      <div class="message bot">What would you like to remember from this page?</div>
+    </div>
+    <textarea id="user-input" rows="3" placeholder="Type your prompt here..."></textarea>
+    <button id="save-note">Generate Notes</button>
+    <footer>Powered by Marinos Antoniou</footer>
+  </div>
+  <!-- Reference external script -->
+  <script src="popup.js"></script>
+</body>
+</html>
