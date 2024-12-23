@@ -3,7 +3,7 @@
   "name": "Study Notes Assistant",
   "version": "1.0",
   "description": "An extension to generate notes based on webpage content and user prompts.",
-  "permissions": ["tabs", "storage", "scripting"],
+  "permissions": ["tabs", "activeTab", "storage", "scripting"],
   "host_permissions": ["<all_urls>", "https://api.openai.com/*"],
   "action": {
     "default_popup": "popup.html",
