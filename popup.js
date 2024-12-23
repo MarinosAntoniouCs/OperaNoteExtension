@@ -54,11 +54,27 @@ async function generateNotesWithModel(prompt, content) {
   }
 }
 
+// Function to save notes to a .txt file
+function saveNotesToFile(fileName, content) {
+  const blob = new Blob([content], { type: "text/plain" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = fileName;
+
+  // Prevent navigation behavior
+  link.style.display = "none"; // Hide the link
+  document.body.appendChild(link); // Append link to the document
+  link.click(); // Trigger download
+  document.body.removeChild(link); // Remove link after download
+}
+
 // Main functionality for the popup
 document.addEventListener("DOMContentLoaded", () => {
   const chatbox = document.getElementById("chatbox");
+  const generateNotesButton = document.getElementById("generate-notes");
   const saveNoteButton = document.getElementById("save-note");
   const userInput = document.getElementById("user-input");
+  let generatedNotes = ""; // Store the generated notes
 
   console.log("Popup loaded successfully."); // Log when popup is loaded
 
@@ -71,27 +87,8 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log(`Added ${type} message:`, content); // Log the added message
   }
 
-  // Button click animations
-  saveNoteButton.addEventListener("mousedown", () => {
-    saveNoteButton.style.backgroundColor = "#009900"; // Darker green
-    saveNoteButton.style.transform = "scale(0.98)";
-    console.log("Button pressed.");
-  });
-
-  saveNoteButton.addEventListener("mouseup", () => {
-    saveNoteButton.style.backgroundColor = "#00ff00"; // Original green
-    saveNoteButton.style.transform = "scale(1)";
-    console.log("Button released.");
-  });
-
-  saveNoteButton.addEventListener("mouseleave", () => {
-    saveNoteButton.style.backgroundColor = "#00ff00"; // Reset to original green
-    saveNoteButton.style.transform = "scale(1)";
-    console.log("Mouse left button area.");
-  });
-
   // Add functionality to the Generate Notes button
-  saveNoteButton.addEventListener("click", async () => {
+  generateNotesButton.addEventListener("click", async () => {
     console.log("Generate Notes button clicked."); // Log button click
 
     const prompt = userInput.value.trim();
@@ -115,9 +112,20 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("Extracted content:", response.content); // Log the extracted content
 
         // Generate notes using the API
-        const notes = await generateNotesWithModel(prompt, response.content);
-        addMessage(`Generated Notes:\n${notes}`, "bot");
+        generatedNotes = await generateNotesWithModel(prompt, response.content);
+        addMessage(`Generated Notes:\n${generatedNotes}`, "bot");
       });
     });
+  });
+
+  // Add functionality to the Save Notes button
+  saveNoteButton.addEventListener("click", () => {
+    if (!generatedNotes) {
+      console.warn("No notes to save."); // Warn if no notes are generated
+      addMessage("No notes available to save. Please generate notes first.", "bot");
+      return;
+    }
+    saveNotesToFile("Generated_Notes.txt", generatedNotes);
+    addMessage("Notes saved successfully!", "bot");
   });
 });
