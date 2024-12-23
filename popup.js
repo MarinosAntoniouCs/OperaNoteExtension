@@ -1,13 +1,12 @@
 // Function to calculate approximate token count
 function estimateTokenCount(text) {
-  // Split by whitespace and punctuation to estimate token count
-  return text.split(/\s+/).length;
+  return text.split(/\s+/).length; // Simple word count approximation
 }
 
 // Function to generate notes using the OpenAI API
 async function generateNotesWithModel(prompt, content) {
-  const apiUrl = "https://api.openai.com/v1/completions";
-  const apiKey = "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"; // Replace with your actual OpenAI API key
+  const apiUrl = "https://api.openai.com/v1/chat/completions"; // Use chat endpoint
+  const apiKey = "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"; // Replace with your actual OpenAI API key
   const maxModelTokens = 8192; // Maximum token limit for gpt-4o-mini
 
   console.log("Preparing request to OpenAI API...");
@@ -17,7 +16,7 @@ async function generateNotesWithModel(prompt, content) {
   console.log("Estimated input token count:", inputTokenCount);
 
   // Calculate dynamic max_tokens
-  const maxTokens = Math.min(maxModelTokens - inputTokenCount, 2000); // Leave room and set a ceiling
+  const maxTokens = Math.min(maxModelTokens - inputTokenCount, 2000);
   console.log("Dynamic max_tokens set to:", maxTokens);
 
   try {
@@ -28,8 +27,11 @@ async function generateNotesWithModel(prompt, content) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
-        prompt: `${prompt}\n\n${content}`,
+        model: "gpt-4o-mini", // Use the appropriate model
+        messages: [
+          { role: "system", content: "You are a helpful assistant for summarizing and generating notes." },
+          { role: "user", content: `${prompt}\n\n${content}` },
+        ],
         max_tokens: maxTokens > 0 ? maxTokens : 50, // Ensure at least a small response
         temperature: 0.7,
       }),
@@ -45,7 +47,7 @@ async function generateNotesWithModel(prompt, content) {
 
     const data = await response.json();
     console.log("Response received from OpenAI API:", data);
-    return data.choices[0]?.text.trim() || "Could not generate notes. Please refine your prompt.";
+    return data.choices[0]?.message?.content.trim() || "Could not generate notes. Please refine your prompt.";
   } catch (error) {
     console.error("Error during API call:", error);
     return "Failed to connect to the API. Check your internet connection or API key.";
