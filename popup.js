@@ -54,18 +54,76 @@ async function generateNotesWithModel(prompt, content) {
   }
 }
 
-// Function to save notes to a .txt file
-function saveNotesToFile(fileName, content) {
-  const blob = new Blob([content], { type: "text/plain" });
+function saveNotesToFile(fileName, content, pageUrl) {
+  // Clean and format content
+  const formattedContent = content
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // Replace **text** with <strong>text</strong>
+    .replace(/^#\s(.*?)$/gm, "<h1>$1</h1>") // Replace # with <h1>
+    .replace(/^##\s(.*?)$/gm, "<h2>$1</h2>") // Replace ## with <h2>
+    .replace(/^###\s(.*?)$/gm, "<h3>$1</h3>") // Replace ### with <h3>
+    .replace(/^####\s(.*?)$/gm, "<h4>$1</h4>") // Replace #### with <h4>
+    .replace(/^- (.*?)(?=\n)/gm, "<li>$1</li>") // List item with - item (only lists with `- `)
+    .replace(/\n\n/g, "</p><p>") // Replace double newlines with paragraph tags
+    .replace(/\n/g, "<br>"); // Replace single newlines with <br>
+
+  const styledContent = `
+    <html>
+      <head>
+        <title>Notes</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+          }
+          h1 {
+            color: #444;
+            border-bottom: 2px solid #00aaff;
+            padding-bottom: 10px;
+          }
+          h3, h4 {
+            color: #555;
+          }
+          ul {
+            padding-left: 20px;
+          }
+          li {
+            margin-bottom: 5px;
+          }
+          strong {
+            color: #007700;
+          }
+          p {
+            margin: 10px 0;
+          }
+          a {
+            color: #0077cc;
+            text-decoration: none;
+          }
+          a:hover {
+            text-decoration: underline;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Generated Notes</h1>
+        <p>${formattedContent}</p>
+        <hr>
+        <p><strong>Source URL:</strong> <a href="${pageUrl}" target="_blank">${pageUrl}</a></p>
+      </body>
+    </html>
+  `;
+
+  const blob = new Blob([styledContent], { type: "text/html" });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
   link.download = fileName;
-
-  // Prevent navigation behavior
-  link.style.display = "none"; // Hide the link
-  document.body.appendChild(link); // Append link to the document
-  link.click(); // Trigger download
-  document.body.removeChild(link); // Remove link after download
+  link.style.display = "none"; // Prevent navigation issues
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 // Main functionality for the popup
@@ -86,46 +144,80 @@ document.addEventListener("DOMContentLoaded", () => {
     chatbox.appendChild(message);
     console.log(`Added ${type} message:`, content); // Log the added message
   }
+// Function to clean up special characters for the text area
+function cleanTextForTextArea(text) {
+  console.log("Original text:", text); // Log original text for debugging
+  
+  let cleanedText = text
+    .replace(/\*\*(.*?)\*\*/g, "$1") // Remove bold markdown (**bold**) 
+    .replace(/^#\s+/gm, "") // Remove '#' at the beginning of headers (e.g., # Header)
+    .replace(/^##\s+/gm, "") // Remove '##' for subheaders (e.g., ## Subheader)
+    .replace(/^###\s+/gm, "") // Remove '###' for sub-subheaders (e.g., ### Minor Header)
+    .replace(/^####\s+/gm, "") // Remove '####' for deeper headers
+    .replace(/^- (.*?)(?=\n)/gm, "$1") // Remove bullet points (e.g., - item)
+    .replace(/^-{3,}$/gm, '') // Remove any '---' (3 or more hyphens)
+    .replace(/\n/g, "\n"); // Keep line breaks intact
 
-  // Add functionality to the Generate Notes button
-  generateNotesButton.addEventListener("click", async () => {
-    console.log("Generate Notes button clicked."); // Log button click
+  console.log("Cleaned text:", cleanedText); // Log cleaned text for debugging
+  return cleanedText;
+}
 
-    const prompt = userInput.value.trim();
-    if (!prompt) {
-      console.warn("No prompt provided."); // Warn if no prompt is given
-      addMessage("Please provide a prompt for note generation!", "bot");
-      return;
-    }
 
-    console.log("Prompt provided:", prompt); // Log the user prompt
 
-    // Extract content from the active tab
-    chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
-      chrome.tabs.sendMessage(tab.id, { action: "extractContent" }, async (response) => {
-        if (!response || !response.content) {
-          console.error("Failed to extract content or no content available:", response); // Log the failure
-          addMessage("Failed to extract content from the page. Please try another webpage.", "bot");
-          return;
-        }
+// Add functionality to the Generate Notes button
+generateNotesButton.addEventListener("click", async () => {
+  console.log("Generate Notes button clicked."); // Log button click
 
-        console.log("Extracted content:", response.content); // Log the extracted content
+  const prompt = userInput.value.trim();
+  if (!prompt) {
+    console.warn("No prompt provided."); // Warn if no prompt is given
+    addMessage("Please provide a prompt for note generation!", "bot");
+    return;
+  }
 
-        // Generate notes using the API
-        generatedNotes = await generateNotesWithModel(prompt, response.content);
-        addMessage(`Generated Notes:\n${generatedNotes}`, "bot");
-      });
+  console.log("Prompt provided:", prompt); // Log the user prompt
+
+  // Extract content from the active tab
+  chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+    chrome.tabs.sendMessage(tab.id, { action: "extractContent" }, async (response) => {
+      if (!response || !response.content) {
+        console.error("Failed to extract content or no content available:", response); // Log the failure
+        addMessage("Failed to extract content from the page. Please try another webpage.", "bot");
+        return;
+      }
+
+      console.log("Extracted content:", response.content); // Log the extracted content
+
+      // Generate notes using the API
+      generatedNotes = await generateNotesWithModel(prompt, response.content);
+      addMessage(`Generated Notes:\n${generatedNotes}`, "bot");
+
+      // Clean the content for the text area and display
+      const cleanedText = cleanTextForTextArea(generatedNotes); // Clean the notes
+      notesTextArea.value = cleanedText; // Assign cleaned text to the textarea
     });
   });
+});
 
-  // Add functionality to the Save Notes button
+
+
   saveNoteButton.addEventListener("click", () => {
     if (!generatedNotes) {
       console.warn("No notes to save."); // Warn if no notes are generated
       addMessage("No notes available to save. Please generate notes first.", "bot");
       return;
     }
-    saveNotesToFile("Generated_Notes.txt", generatedNotes);
-    addMessage("Notes saved successfully!", "bot");
+  
+    // Get the active tab's URL
+    chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+      const pageUrl = tab.url || "URL not available"; // Fallback if URL is unavailable
+      saveNotesToFile(
+        `${generatedNotes.split(' ').slice(0, 3).join('_')}_${new Date().toISOString().replace(/[-:.TZ]/g, '')}.html`,
+        generatedNotes, // Pass only the notes content
+        pageUrl // Pass the URL separately to include it properly
+      );
+      addMessage("Notes saved as HTML file successfully!", "bot");
+    });
   });
+  
 });
