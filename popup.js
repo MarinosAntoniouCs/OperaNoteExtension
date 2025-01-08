@@ -6,7 +6,7 @@ function estimateTokenCount(text) {
 // Function to generate notes using the OpenAI API
 async function generateNotesWithModel(prompt, content) {
   const apiUrl = "https://api.openai.com/v1/chat/completions"; // Use chat endpoint
-  const apiKey = "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"; // Replace with your actual OpenAI API key
+  const apiKey = "YOUR-API-KEY"; // Replace with your actual OpenAI API key
   const maxModelTokens = 8192; // Maximum token limit for gpt-4o-mini
 
   console.log("Preparing request to OpenAI API...");
