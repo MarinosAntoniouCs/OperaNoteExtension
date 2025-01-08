@@ -67,6 +67,8 @@ We welcome contributions to improve the functionality and features of the Notes 
 3. Make your changes and commit them (`git commit -am 'Add new feature'`).
 4. Push to the branch (`git push origin feature/feature-name`).
 5. Submit a pull request.
+   
+![Application Interface](https://github.com/MarinosAntoniouCs/OperaNoteExtension/blob/main/OperaExtensionInterface.png)
 
 ## License
 
